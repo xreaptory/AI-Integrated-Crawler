@@ -5,14 +5,14 @@ This project provides an AI-guided web crawler that ranks pages on a site by sem
 ## Features
 
 - Animated white-on-black Tkinter GUI with live logs, progress pulse, and sortable results table.
-- Goal-aware filter that parses the user prompt, extracts the essential terms, and keeps only pages that match enough of them.
-- Salary extraction and ranking so high-paying job listings surface first whenever the goal emphasises compensation.
+- Goal-aware heuristics parse the user prompt, highlight the essential terms, and annotate how well each page overlaps with them.
 - Embedding-based duplicate detection prevents reprocessing pages with near-identical content.
 - Skips the landing page in the ranked results while still using it to establish the crawl goal.
 - Respects `robots.txt` and stays on the starting domain by default.
 - Uses `sentence-transformers` embeddings to infer an initial goal from the landing page when no goal is supplied.
 - Ranks follow-up links by semantic similarity between their anchor text and the goal embedding.
-- Summarises each visited page with the most relevant sentences, extracted keywords, and salary snippets when available.
+- Summarises each visited page with relevant sentences and extracted keywords, with optional AI assistance.
+- Optional OpenAI-powered summaries boost recall: provide an API key to get concise AI summaries and relevance overrides.
 
 ## Installation
 
@@ -24,13 +24,28 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+By default the app installs only free dependencies. If you want OpenAI-powered summaries, install the optional client after the main requirements:
+
+```powershell
+pip install openai
+```
+
+Without that extra step the crawler stays fully local and free.
+
 ## Graphical interface
 
 ```powershell
 python crawler.py
 ```
 
-Enter the start URL and optional goal, adjust the crawl limits, and press **Start crawl**. The animated banner and pulsing status dot show progress while logs and summaries stream into the lower panels. Each collected page displays keywords, representative sentences, salary snippets, and goal-alignment diagnostics. The interface keeps a white foundation with black accents so the results table and summaries stay readable.
+Enter the start URL and optional goal, adjust the crawl limits, and press **Start crawl**. The animated banner and pulsing status dot show progress while logs and summaries stream into the lower panels. Each collected page displays keywords, representative sentences, and goal-alignment diagnostics. The interface keeps a white foundation with black accents so the results table and summaries stay readable.
+
+### AI summaries (optional)
+
+- Paste an OpenAI API key in the **OpenAI API key** field (kept only in memory) or set the `OPENAI_API_KEY` environment variable before launching the app.
+- When a valid key is available the crawler asks the `gpt-4o-mini` model for JSON-formatted summaries and goal relevance judgements.
+- The AI verdict can rescue promising pages the heuristic filter would reject or hide obvious mismatches.
+- If the key is missing or the API call fails the crawler falls back to the built-in heuristic summaries automatically.
 
 ## Example output
 
@@ -50,3 +65,4 @@ Relevance: 0.842
 - Always review the target website's terms of service before crawling.
 - Increase the delay slider if you plan to crawl larger sites to avoid overloading servers.
 - For offline usage, run the script once while connected to download the embedding model.
+- The OpenAI summariser is optional: leave the key blank if you prefer to rely solely on the local heuristic filters.
